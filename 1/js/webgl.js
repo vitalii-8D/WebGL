@@ -74,6 +74,7 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
    // Связываем буфер с точкой связи
    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
 
+   // Нарисуем сердечко :)
    let vertexArray = [
       // X, Y
       0.0, 0.3,

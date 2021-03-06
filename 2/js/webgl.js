@@ -75,74 +75,62 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
 
    let vertexArray = [
-      // X, Y
-      0.0, 0.3,
-      0.2, 0.5,
-      0.0, 0.0,
+      // X,  Y,   Z       R,   G,   B
+      0.0,   0.3, 0.0,    1.0, 0.0, 0.0,
+      0.5,  -0.8, 0.0,    1.0, 0.0, 0.0,
+      -0.5, -0.8, 0.0,    1.0, 0.0, 0.0,
 
-      0.2, 0.5,
-      0.4, 0.5,
-      0.0, 0.0,
-
-      0.4, 0.5,
-      0.6, 0.3,
-      0.0, 0.0,
-
-      0.6, 0.3,
-      0.6, 0.1,
-      0.0, 0.0,
-
-      0.6, 0.1,
-      0.0, -0.6,
-      0.0, 0.0,
-
-      0.0, -0.6,
-      -0.6, 0.1,
-      0.0, 0.0,
-
-      -0.6, 0.1,
-      -0.6, 0.3,
-      0.0, 0.0,
-
-      -0.6, 0.3,
-      -0.4, 0.5,
-      0.0, 0.0,
-
-      -0.4, 0.5,
-      -0.2, 0.5,
-      0.0, 0.0,
-
-      -0.2, 0.5,
-      0.0, 0.3,
-      0.0, 0.0,
+      0.0,  -0.3, 0.5,    0.0, 0.0, 1.0,
+      0.5,   0.8, 0.5,    0.0, 0.0, 1.0,
+      -0.5,  0.8, 0.5,    0.0, 0.0, 1.0
    ]
-//gl.ARRAY_BUFFER = точка связи
+// gl.ARRAY_BUFFER = точка связи
    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexArray), gl.STATIC_DRAW)
 
+   // Достаем аттрибут для позиции
    let positionAttribLocation = gl.getAttribLocation(program, 'vertexPosition')
 
    gl.vertexAttribPointer(
       positionAttribLocation, // ссылка на атрибут
-      2,  // кол-во элементов на 1 итерацию
+      3,  // кол-во элементов на 1 итерацию
       gl.FLOAT, // тип данных
       gl.FALSE, // нормализация
       // кол-во элэментов массива на 1 вершину (можно передавать еще и цвет: [X,Y,R,G,B,A])
-      2 * Float32Array.BYTES_PER_ELEMENT, // тут 4 - кол-во байтов в одном символе
+      6 * Float32Array.BYTES_PER_ELEMENT, // тут 4 - кол-во байтов в одном символе
       0 * Float32Array.BYTES_PER_ELEMENT // отступ для каждой вершины
    )
 
    gl.enableVertexAttribArray(positionAttribLocation)
 
+   // Достаем аттрибут для цвета
+   let colorAttribLocation = gl.getAttribLocation(program, 'vertexColor')
+
+   gl.vertexAttribPointer(
+      colorAttribLocation, // ссылка на атрибут
+      3,  // кол-во элементов на 1 итерацию
+      gl.FLOAT, // тип данных
+      gl.FALSE, // нормализация
+      // кол-во элэментов массива на 1 вершину (можно передавать еще и цвет: [X,Y,R,G,B,A])
+      6 * Float32Array.BYTES_PER_ELEMENT, // тут 4 - кол-во байтов в одном символе
+      3 * Float32Array.BYTES_PER_ELEMENT // отступ для каждой вершины
+   )
+
+   gl.enableVertexAttribArray(colorAttribLocation)
+
    // Установим цвет для холста после очистки буфера цвета
    gl.clearColor(0.75, 0.9, 1.0, 1.0);
    // Очистим буфер цвета
-   gl.clear(gl.COLOR_BUFFER_BIT)
+   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+   gl.enable(gl.DEPTH_TEST) // Проверка глубины (типа оси Z)
+   // Когда рисуется фигура ось Z сравнивается со значением в буфере (по умолчанию 1)
+   // И если Z текущей фигуры < чем значение в буфере
+   // Пиксель зарисовуется текущим цветом, если нет - пиксель остается прежний.
 
    gl.useProgram(program)
    gl.drawArrays(
       gl.TRIANGLES, // Примитив с помощью которого будем рисовать
       0, // С какого елемента в масиве начать (с какоц вершины)
-      30 // Число вершин которые нужно отрисовать
+      6 // Число вершин которые нужно отрисовать
    )
 }
 

@@ -75,7 +75,7 @@ let draw = function () {
 
    gl.useProgram(program)
    gl.drawArrays(gl.POINTS, 0, vertices_number)
-   gl.drawArrays(gl.TRIANGLES, 0, vertices_number)
+   gl.drawArrays(gl.TRIANGLE_FAN, 0, vertices_number)
 }
 
 function onMouseDown(event, canvas) {

@@ -36,6 +36,7 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
    let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderText)
 
    program = createProgram(gl, vertexShader, fragmentShader)
+   gl.useProgram(program)
 
    let a_Position = gl.getAttribLocation(program, 'a_Position')
    let a_PointSize = gl.getAttribLocation(program, 'a_PointSize')
@@ -89,7 +90,6 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
       }
    }
 
-   gl.useProgram(program)
 }
 
 

@@ -25,7 +25,7 @@ const createShader = function (gl, type, source) {
 
    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
       alert('Error compile shader!')
-      console.error(gl.getShaderInfoLog(shader));
+      console.error(gl.getShaderInfoLog(vertexShader));
       return false;
    }
 

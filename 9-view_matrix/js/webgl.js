@@ -17,6 +17,7 @@ const InitWebGL = function () {
 }
 
 let gl, program;
+let PROJMATRIX, VIEWMATRIX, MODELMATRIX;
 
 const StartWebGL = function (vertexShaderText, fragmentShaderText) {
    let canvas = document.getElementById('example-canvas')
@@ -28,9 +29,9 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
    }
 
    // canvas.width = gl.canvas.clientWidth
-   canvas.width = 400
+   canvas.width = 700
    // canvas.height = gl.canvas.clientHeight
-   canvas.height = 400
+   canvas.height = 700
 
    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 
@@ -105,11 +106,11 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
    canvas.addEventListener('mouseout', mouseUp, false)
    canvas.addEventListener('mousemove', mouseMove, false)
 
-   let PROJMATRIX = mat4.perspective([], 40, canvas.width / canvas.height, 1, 100)
-   let VIEWMATRIX = mat4.create()
-   let MODELMATRIX = mat4.create()
+   PROJMATRIX = mat4.perspective([], 40, canvas.width / canvas.height, 1, 100)
+   VIEWMATRIX = mat4.create()
+   MODELMATRIX = mat4.create()
 
-   let anitate = function (time) {
+   let animate = function (time) {
 
       // CLOCK
       let d = new Date()
@@ -139,7 +140,7 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
 
       // ------   Minutes  --------- \\
       mat4.rotateZ(MODELMATRIX, MODELMATRIX, AngleMinutes)
-      mat4.translate(MODELMATRIX, MODELMATRIX, [0.0, 0.0, 0.0])
+      mat4.translate(MODELMATRIX, MODELMATRIX, [0.0, 1.0, 0.0])
       mat4.scale(MODELMATRIX, MODELMATRIX, [0.15, 3.8, 1.0])
 
       gl.clearColor(0.5, 0.5, 0.5, 1.0);
@@ -163,7 +164,7 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
 
       mat4.rotateZ(MODELMATRIX, MODELMATRIX, AngleHours)
       mat4.translate(MODELMATRIX, MODELMATRIX, [0.0, 1.3, 0.0])
-      mat4.scale(MODELMATRIX, MODELMATRIX, [0.2, 3.8, 1.0])
+      mat4.scale(MODELMATRIX, MODELMATRIX, [0.2, 3.0, 1.0])
 
       gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
 
@@ -223,12 +224,30 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
          gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
       }
 
-      window.requestAnimationFrame(anitate)
+      window.requestAnimationFrame(animate)
    }
 
-   anitate(0)
+   animate(0)
 }
 
+document.addEventListener('keydown', (e) => {
+   if (e.keyCode === 32) {
+      let pMatrix = [], vMatrix = [], mMatrix = [];
+      for (let i = 0; i < 16; i++) {
+         if (i % 4 === 0) {
+            pMatrix.push([])
+            vMatrix.push([])
+            mMatrix.push([])
+         }
+         pMatrix[Math.floor(i / 4)].push(PROJMATRIX[i])
+         vMatrix[Math.floor(i / 4)].push(VIEWMATRIX[i])
+         mMatrix[Math.floor(i / 4)].push(MODELMATRIX[i])
+      }
+      console.log('PROJMATRIX  ', pMatrix);
+      console.log('VIEWMATRIX  ', vMatrix);
+      console.log('MODELMATRIX  ', mMatrix);
+   }
+})
 
 document.addEventListener('DOMContentLoaded', () => {
    InitWebGL();

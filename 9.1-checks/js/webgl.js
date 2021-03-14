@@ -50,6 +50,8 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
    gl.enableVertexAttribArray(a_Position)
    gl.enableVertexAttribArray(a_Color)
 
+   let u_Transparency = gl.getUniformLocation(program, 'u_Transparency')
+
    let vertex_data =
       [  // Lines
          1, 0, 0,     1.0, 0.0, 0.0,
@@ -80,7 +82,7 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertex_data), gl.STATIC_DRAW)
 
 
-   let PROJMATRIX = mat4.perspective(30, canvas.width / canvas.height, 0.1, 100)
+   let PROJMATRIX = mat4.perspective(25, canvas.width / canvas.height, 0.1, 100)
    let VIEWMATRIX = mat4.create()
    let MODELMATRIX = mat4.create()
 
@@ -93,16 +95,10 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
 
 
       // ---- VIEW  ---- //
-      mat4.translate(VIEWMATRIX, [0.0, 0.0, -5.0])
+      mat4.translate(VIEWMATRIX, [-0.5, -0.5, -7.0])
       mat4.rotateX(VIEWMATRIX, -rot_y)
       mat4.rotateY(VIEWMATRIX, -rot_x)
       // mat4.rotateZ(VIEWMATRIX, 180 / 180 * Math.PI)
-
-      // ------   Minutes  --------- \\
-      mat4.translate(MODELMATRIX, [0.0, 0.0, 0.0])
-      // mat4.rotateY(MODELMATRIX, 90 / 180 * Math.PI)
-      mat4.scale(MODELMATRIX, [1.0, 1.0, 1.0])
-
 
       gl.uniformMatrix4fv(u_Pmatrix, false, PROJMATRIX)
       gl.uniformMatrix4fv(u_Mmatrix, false, MODELMATRIX)
@@ -116,7 +112,21 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
       gl.enable(gl.DEPTH_TEST)
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
+      // Draw coordinates
+      gl.uniform1f(u_Transparency, 1.0)
       gl.drawArrays(gl.LINES, 0, 6)
+
+      // ------   MODELMATRIX  --------- \\
+      mat4.translate(MODELMATRIX, [0.5, 0.5, 0.5])
+      mat4.rotateY(MODELMATRIX, 0 / 180 * Math.PI)
+      mat4.scale(MODELMATRIX, [1.0, 1.0, 1.0])
+
+
+      gl.uniformMatrix4fv(u_Pmatrix, false, PROJMATRIX)
+      gl.uniformMatrix4fv(u_Mmatrix, false, MODELMATRIX)
+      gl.uniformMatrix4fv(u_Vmatrix, false, VIEWMATRIX)
+
+      gl.uniform1f(u_Transparency, 0.5)
       gl.drawArrays(gl.TRIANGLE_FAN, 6, 4)
       gl.drawArrays(gl.TRIANGLE_FAN, 10, 4)
       gl.drawArrays(gl.TRIANGLE_FAN, 14, 4)

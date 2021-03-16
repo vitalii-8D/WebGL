@@ -144,8 +144,8 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
       mat4.scale(MODELMATRIX, MODELMATRIX, [0.15, 3.8, 1.0])
 
       gl.clearColor(0.5, 0.5, 0.5, 1.0);
-      gl.clear(gl.COLOR_BUFFER_BIT)
-      gl.enable(gl.DEPTH_TEST | gl.DEPTH_BUFFER_BIT)
+      gl.enable(gl.DEPTH_TEST )
+      gl.clear(gl.COLOR_BUFFER_BIT| gl.DEPTH_BUFFER_BIT)
 
       gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
 

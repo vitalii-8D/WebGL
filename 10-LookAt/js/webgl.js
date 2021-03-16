@@ -28,9 +28,9 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
    }
 
    // canvas.width = gl.canvas.clientWidth
-   canvas.width = 400
+   canvas.width = 600
    // canvas.height = gl.canvas.clientHeight
-   canvas.height = 400
+   canvas.height = 600
 
    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 
@@ -133,15 +133,13 @@ const StartWebGL = function (vertexShaderText, fragmentShaderText) {
       mat4.identity(MODELMATRIX);
       mat4.identity(VIEWMATRIX);
 
-      mat4.identity(VIEWMATRIX_eye);
-
       //-------------------  VIEW --------------------------------------------
 
-
+      mat4.identity(VIEWMATRIX_eye);
       mat4.rotateY(VIEWMATRIX_eye, time * 0.0005);
-      mat4.translate(VIEWMATRIX_eye, [0.0, 0.0, 5.0]);
+      mat4.translate(VIEWMATRIX_eye, [0.0, 0.0, 0.0]);
 
-      var eye = vec3.create([0.0, 5.0, 5.0]);
+      var eye = vec3.create([0.0, 5.0, 10.0]);
 
       eye = mat4.multiplyVec3(VIEWMATRIX_eye, eye);
 

@@ -120,7 +120,44 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
    gl.clearDepth(1.0);
 
    //   - - - -- -  VIDEO  --
-   let video = document.getElementById('video')
+   var copyVideo = false;
+
+   function setupVideo(url) {
+      const video = document.createElement('video');
+
+      var playing = false;
+      var timeupdate = false;
+
+      video.autoplay = true;
+      video.muted = true;
+      video.loop = true;
+
+      // Waiting for these 2 events ensures
+      // there is data in the video
+
+      video.addEventListener('playing', function() {
+         playing = true;
+         checkReady();
+      }, true);
+
+      video.addEventListener('timeupdate', function() {
+         timeupdate = true;
+         checkReady();
+      }, true);
+
+      video.src = url;
+      video.play();
+
+      function checkReady() {
+         if (playing && timeupdate) {
+            copyVideo = true;
+         }
+      }
+
+      return video;
+   }
+
+   let video = setupVideo('textures/video.mp4')
 
    let texture = gl.createTexture()
 
@@ -168,7 +205,7 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
       dt = time - old_time;
       old_time = time;
 
-      if (video.currentTime > 0) {
+      if (copyVideo) {
          console.log('sdasd');
          gl.activeTexture(gl.TEXTURE0)
          refresh_texture()

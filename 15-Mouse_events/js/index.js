@@ -229,7 +229,7 @@ function render() {
    context.drawImage(
       gl.canvas,
       0, 0, gl.canvas.width, gl.canvas.height,
-      0, 0, canvas.width, canvas.height)
+      0, 0, context.canvas.width, context.canvas.height)
 }
 
 window.addEventListener('resize', resize);

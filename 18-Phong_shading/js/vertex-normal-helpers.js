@@ -19,10 +19,10 @@ function loadNormalShaders(gl) {
         gl_FragColor = vec4(0.0,0.1,0.5,1.0);\n\
         }";
 
-   var vShader = getShader(gl,'vs',normal_shader_vertex_source);              if(!vShader)    return null;
-   var fShader = getShader(gl,'fs',normal_shader_fragment_source);            if(!fShader)    return null;
-   if(!fShader) {gl.deleteShader(vShader);  return null;}
-   var shaderProgram_Normal = getProgram(gl,vShader,fShader);
+   var vShader = createShader(gl,gl.VERTEX_SHADER,normal_shader_vertex_source);
+   var fShader = createShader(gl,gl.FRAGMENT_SHADER,normal_shader_fragment_source);
+
+   var shaderProgram_Normal = createProgram(gl,vShader,fShader);
 
    shaderProgram_Normal.u_Pmatrix_normal = gl.getUniformLocation(shaderProgram_Normal,'u_Pmatrix');
    shaderProgram_Normal.u_Mmatrix_normal = gl.getUniformLocation(shaderProgram_Normal,'u_Mmatrix');

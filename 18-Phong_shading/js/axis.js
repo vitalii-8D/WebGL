@@ -25,10 +25,10 @@ function loadAxisShaders(gl) {
         }";
 
 
-   var vShader = getShader(gl,'vs',axis_shader_vertex_source);              if(!vShader)    return null;
-   var fShader = getShader(gl,'fs',axis_shader_fragment_source);            if(!fShader)    return null;
-   if(!fShader) {gl.deleteShader(vShader);  return null;}
-   var shaderProgram_Axis = getProgram(gl,vShader,fShader);
+   var vShader = createShader(gl,gl.VERTEX_SHADER,axis_shader_vertex_source);
+   var fShader = createShader(gl,gl.FRAGMENT_SHADER,axis_shader_fragment_source);
+
+   let shaderProgram_Axis = createProgram(gl,vShader,fShader);
 
    shaderProgram_Axis.u_Pmatrix_axis = gl.getUniformLocation(shaderProgram_Axis,'u_Pmatrix');
    shaderProgram_Axis.u_Mmatrix_axis = gl.getUniformLocation(shaderProgram_Axis,'u_Mmatrix');

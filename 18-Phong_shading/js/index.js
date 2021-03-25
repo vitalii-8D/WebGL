@@ -15,7 +15,7 @@ const InitWebGL = () => {
       })
 }
 
-let context, gl, mainProgram;
+let context, gl, shaderProgram;
 
 const StartWebGL = (vertexShaderText, fragmentShaderText) => {
 
@@ -30,33 +30,38 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
    }
 
    bufferGL.width = 1200
-   bufferGL.height = 1200
+   bufferGL.height = 1000
    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
    resize();
 
    let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderText);
    let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderText);
 
-   mainProgram = createProgram(gl, vertexShader, fragmentShader);
+   shaderProgram = createProgram(gl, vertexShader, fragmentShader);
 
    let gui = myGUI();
    let MouseContr = new MouseController(gl);
 
-   let u_Pmatrix = gl.getUniformLocation(mainProgram, 'u_Pmatrix');
-   let u_Vmatrix = gl.getUniformLocation(mainProgram, 'u_Vmatrix');
-   let u_Mmatrix = gl.getUniformLocation(mainProgram, 'u_Mmatrix');
-   let u_Nmatrix = gl.getUniformLocation(mainProgram, 'u_Nmatrix');
+   let u_Pmatrix = gl.getUniformLocation(shaderProgram, 'u_Pmatrix');
+   let u_Vmatrix = gl.getUniformLocation(shaderProgram, 'u_Vmatrix');
+   let u_Mmatrix = gl.getUniformLocation(shaderProgram, 'u_Mmatrix');
+   let u_Nmatrix = gl.getUniformLocation(shaderProgram, 'u_Nmatrix');
+   let  u_source_direction = gl.getUniformLocation(shaderProgram,'u_source_direction');
+   let  u_view_direction = gl.getUniformLocation(shaderProgram,'u_view_direction');
+   let  u_shininess = gl.getUniformLocation(shaderProgram,'u_shininess');
 
-   let a_Position = gl.getAttribLocation(mainProgram, 'a_Position');
-   let a_uv = gl.getAttribLocation(mainProgram, 'a_uv');
-   let a_normal = gl.getAttribLocation(mainProgram, 'a_normal');
+   let a_Position = gl.getAttribLocation(shaderProgram, 'a_Position');
+   let a_uv = gl.getAttribLocation(shaderProgram, 'a_uv');
+   let a_normal = gl.getAttribLocation(shaderProgram, 'a_normal');
 
-   let u_sampler = gl.getUniformLocation(mainProgram, 'samplerTex');
-   gl.uniform1i(u_sampler, 0)
+   let u_sampler = gl.getUniformLocation(shaderProgram, 'samplerTex');
 
    gl.enableVertexAttribArray(a_Position)
    gl.enableVertexAttribArray(a_uv)
    gl.enableVertexAttribArray(a_normal)
+
+   gl.useProgram(shaderProgram)
+   gl.uniform1i(u_sampler, 0)
 
    // *******  Create Textures  ****
    let tex = loadTexture(gl, 'textures/paper.jpg')
@@ -68,10 +73,10 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
    loadTextResource('models/knot.json')
       .then(model => JSON.parse(model))
       .then(model => {
-         ModelVertices = model.meshes[0].vertices
-         ModelIndices = [].concat.apply([], model.meshes[0].faces)
-         ModelTexCoords = model.meshes[0].texturecoords[0]
-         ModelNormal = model.meshes[0].normals
+         ModelVertices = model.meshes[0].vertices;
+         ModelIndices = [].concat.apply([], model.meshes[0].faces);
+         ModelTexCoords = model.meshes[0].texturecoords[0];
+         ModelNormal = model.meshes[0].normals;
 
          TRIANGLE_VERTEX = gl.createBuffer()
          gl.bindBuffer(gl.ARRAY_BUFFER, TRIANGLE_VERTEX)
@@ -89,17 +94,21 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, TRIANGLE_FACES)
          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ModelIndices), gl.STATIC_DRAW)
 
-         // gl.model = model
+         gl.model = model
       })
 
-   // ************  MATRIX   ************
+   // ************ Create MATRIX   ************
 
-   let PROJMATRIX = mat4.perspective(40, gl.canvas.width / gl.canvas.height, 1, 200)
-   let MODELMATRIX = mat4.create()
-   let VIEWMATRIX = mat4.create()
-   let NORMALMATRIX = mat4.create()
-   let NORMALMATRIX_HELPER = mat4.create()
-   let VIEWMATRIX_CAMERA = mat4.create()
+   let  PROJMATRIX = glMatrix.mat4.create();
+   glMatrix.mat4.identity(PROJMATRIX);
+   let  fovy =  40 * Math.PI / 180;
+   glMatrix.mat4.perspective(PROJMATRIX,fovy,gl.canvas.width/gl.canvas.height,1,100);
+
+   let  MODELMATRIX   = glMatrix.mat4.create();
+   let  VIEWMATRIX    = glMatrix.mat4.create();
+   let  NORMALMATRIX  = glMatrix.mat4.create();
+   let  NORMALMATRIX_HELPER  = glMatrix.mat4.create();
+   let  VIEWMATRIX_CAMERA    = glMatrix.mat4.create();
 
    //  **** NORMAL ***
    let shaderProgram_Normal;
@@ -116,23 +125,18 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
 
    let Z = 0;
    let AMORTIZATION = 0.9;
+   let animate;
 
-   mat4.identity(MODELMATRIX)
-   mat4.identity(VIEWMATRIX)
-   mat4.identity(NORMALMATRIX)
-   mat4.lookAt([4.0, 5.0, 15.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], VIEWMATRIX)
-
-   let animate = function (time) {
+   animate = function (time) {
 
       window.requestAnimationFrame(animate)
 
-      if (!TRIANGLE_FACES) return false;
-
+      if (!gl.model) return false;
       //---------- translate  --------------------------------------------//
-      MouseContr.dX *= AMORTIZATION, MouseContr.dY *= AMORTIZATION;
-      MouseContr.theta += MouseContr.dX, MouseContr.phi += MouseContr.dY;
+      MouseContr.dX *= AMORTIZATION; MouseContr.dY *= AMORTIZATION;
+      MouseContr.theta += MouseContr.dX; MouseContr.phi += MouseContr.dY;
 
-      Z = Z + MouseContr.dZ; if(Z<1.0){Z=1.0};
+      Z = Z + MouseContr.dZ; if(Z<1.0){Z=1.0}
       //----------------------------------------------------------------------------------
       glMatrix.mat4.identity(VIEWMATRIX);
       glMatrix.mat4.lookAt(VIEWMATRIX,[gui.view_directionX, gui.view_directionY, gui.view_directionZ],[0.0, 0.0, 0.0],[0.0, 1.0, 0.0]);
@@ -141,9 +145,6 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
       glMatrix.mat4.identity(VIEWMATRIX_CAMERA);
       // glMatrix.mat4.rotateX(VIEWMATRIX_CAMERA,VIEWMATRIX_CAMERA , -MouseContr.phi);
       // glMatrix.mat4.rotateY(VIEWMATRIX_CAMERA,VIEWMATRIX_CAMERA , -MouseContr.theta);
-
-
-      //----------------------------------------------------------------------------------
 
 
       //----------------- NORMALMATRIX_HELPER --------------------------------------------
@@ -214,7 +215,7 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
       }
       //------------------------- AXIS -------------------------------------------------
       if(gui.axis){
-         loadAxisHelper(gl,shaderProgram_axis,PROJMATRIX,VIEWMATRIX,MODELMATRIX);
+         loadAxisHelper(gl,shaderProgram_Axis,PROJMATRIX,VIEWMATRIX,MODELMATRIX);
       }
 
       gl.flush();

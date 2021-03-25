@@ -1,7 +1,7 @@
 class MouseController{
 
    constructor(gl){
-      var oThis = this;
+      let oThis = this;
       this.drag = false;
 
       this.dZ = 0.0;
@@ -34,7 +34,7 @@ class MouseController{
    mouseDown=function(e) {
 
       this.drag = true;
-      this.old_x = e.pageX, this.old_y = e.pageY;
+      this.old_x = e.pageX; this.old_y = e.pageY;
       e.preventDefault();
       return false;
    };
@@ -73,6 +73,5 @@ class MouseController{
       if (e.key === "ArrowDown") {this.dZ = 0.0;}
 
    }
-
 
 }

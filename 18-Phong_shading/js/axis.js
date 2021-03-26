@@ -65,6 +65,9 @@ function loadAxisHelper(gl,shaderProgram_Axis,PROJMATRIX,VIEWMATRIX,MODELMATRIX,
    glMatrix.mat4.identity(MODELMATRIX_AXIS);
 
    gl.useProgram(shaderProgram_Axis);
+   gl.enableVertexAttribArray(shaderProgram_Axis.a_Position_axis)
+   gl.enableVertexAttribArray(shaderProgram_Axis.aColor_axis)
+
    gl.uniformMatrix4fv(shaderProgram_Axis.u_Pmatrix_axis,false,PROJMATRIX);
    gl.uniformMatrix4fv(shaderProgram_Axis.u_Vmatrix_axis,false,VIEWMATRIX);
    gl.uniformMatrix4fv(shaderProgram_Axis.u_Mmatrix_axis,false,MODELMATRIX_AXIS);

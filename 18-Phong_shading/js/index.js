@@ -1,13 +1,21 @@
-const InitWebGL = () => {
-   let VSText, FSText;
-   loadTextResource('shaders/vertexShader.glsl')
+const InitWebGL = (e) => {
+   let VSText1, FSText1, VSText2, FSText2;
+   loadTextResource(`shaders/vertexShader1.glsl`)
       .then(result => {
-         VSText = result;
-         return loadTextResource('shaders/fragmentShader.glsl')
+         VSText1 = result;
+         return loadTextResource(`shaders/fragmentShader1.glsl`)
       })
       .then(result => {
-         FSText = result;
-         return StartWebGL(VSText, FSText)
+         FSText1 = result;
+         return loadTextResource(`shaders/vertexShader2.glsl`)
+      })
+      .then(result => {
+         VSText2 = result;
+         return loadTextResource(`shaders/fragmentShader2.glsl`)
+      })
+      .then(result => {
+         FSText2 = result;
+         return StartWebGL(VSText1, FSText1, VSText2, FSText2)
       })
       .catch(err => {
          alert('Error with loading resources. See console for details!')
@@ -17,7 +25,7 @@ const InitWebGL = () => {
 
 let context, gl, shaderProgram;
 
-const StartWebGL = (vertexShaderText, fragmentShaderText) => {
+const StartWebGL = (vertexShaderText1, fragmentShaderText1, vertexShaderText2, fragmentShaderText2) => {
 
    context = document.getElementById('canvas').getContext('2d');
 
@@ -34,34 +42,79 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
    resize();
 
-   let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderText);
-   let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderText);
+   // Math in the Vertex shader
+   let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderText1);
+   let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderText1);
+   // Math in the Fragment shader
+   let vertexShader2 = createShader(gl, gl.VERTEX_SHADER, vertexShaderText2);
+   let fragmentShader2 = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderText2);
 
-   shaderProgram = createProgram(gl, vertexShader, fragmentShader);
+   // Math in vertex shader
+   let program1 = createProgram(gl, vertexShader, fragmentShader);
+   let a_Position1 = gl.getAttribLocation(program1, 'a_Position');
+   let a_uv1 = gl.getAttribLocation(program1, 'a_uv');
+   let a_normal1 = gl.getAttribLocation(program1, 'a_normal');
+   // Math in fragment shader
+   let program2 = createProgram(gl, vertexShader2, fragmentShader2);
+   let a_Position2 = gl.getAttribLocation(program2, 'a_Position');
+   let a_uv2 = gl.getAttribLocation(program2, 'a_uv');
+   let a_normal2 = gl.getAttribLocation(program2, 'a_normal');
+
+   let currentProgram = 1;
+   shaderProgram = program1
+
+   let switchMainProgram = function (e) {
+      let shaderId = +e.target.getAttribute('shaderId')
+      if (shaderId === currentProgram) return false;
+      let program;
+
+      window.cancelAnimationFrame(animate)
+
+      if (shaderId === 1) {
+         program = program1
+      } else {
+         program = program2
+      }
+      shaderProgram = program;
+      setShaderVar(program)
+
+      document.getElementById(`btn${currentProgram}`).style.backgroundColor = 'inherit'
+      document.getElementById(`btn${shaderId}`).style.backgroundColor = 'limegreen'
+      currentProgram = shaderId;
+
+      window.requestAnimationFrame(time => animate(time))
+   }
 
    let gui = myGUI();
    let MouseContr = new MouseController(context);
 
-   let u_Pmatrix = gl.getUniformLocation(shaderProgram, 'u_Pmatrix');
-   let u_Vmatrix = gl.getUniformLocation(shaderProgram, 'u_Vmatrix');
-   let u_Mmatrix = gl.getUniformLocation(shaderProgram, 'u_Mmatrix');
-   let u_Nmatrix = gl.getUniformLocation(shaderProgram, 'u_Nmatrix');
-   let  u_source_direction = gl.getUniformLocation(shaderProgram,'u_source_direction');
-   let  u_view_direction = gl.getUniformLocation(shaderProgram,'u_view_direction');
-   let  u_shininess = gl.getUniformLocation(shaderProgram,'u_shininess');
+   let u_Pmatrix, u_Vmatrix, u_Mmatrix, u_Nmatrix, u_source_direction,
+      u_view_direction, u_shininess, a_Position, a_uv, a_normal, u_sampler
 
-   let a_Position = gl.getAttribLocation(shaderProgram, 'a_Position');
-   let a_uv = gl.getAttribLocation(shaderProgram, 'a_uv');
-   let a_normal = gl.getAttribLocation(shaderProgram, 'a_normal');
+   function setShaderVar(program) {
+      u_Pmatrix = gl.getUniformLocation(program, 'u_Pmatrix');
+      u_Vmatrix = gl.getUniformLocation(program, 'u_Vmatrix');
+      u_Mmatrix = gl.getUniformLocation(program, 'u_Mmatrix');
+      u_Nmatrix = gl.getUniformLocation(program, 'u_Nmatrix');
+      u_source_direction = gl.getUniformLocation(program, 'u_source_direction');
+      u_view_direction = gl.getUniformLocation(program, 'u_view_direction');
+      u_shininess = gl.getUniformLocation(program, 'u_shininess');
 
-   let u_sampler = gl.getUniformLocation(shaderProgram, 'samplerTex');
+      a_Position = a_Position1;
+      a_uv = a_uv1;
+      a_normal = a_normal1;
 
-   gl.enableVertexAttribArray(a_Position)
-   gl.enableVertexAttribArray(a_uv)
-   gl.enableVertexAttribArray(a_normal)
+      u_sampler = gl.getUniformLocation(program, 'samplerTex');
 
-   gl.useProgram(shaderProgram)
-   gl.uniform1i(u_sampler, 0)
+      gl.enableVertexAttribArray(a_Position)
+      gl.enableVertexAttribArray(a_uv)
+      gl.enableVertexAttribArray(a_normal)
+
+      gl.useProgram(program)
+      gl.uniform1i(u_sampler, 0)
+   }
+
+   setShaderVar(shaderProgram)
 
    // *******  Create Textures  ****
    let tex = loadTexture(gl, 'textures/paper.jpg')
@@ -95,20 +148,21 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ModelIndices), gl.STATIC_DRAW)
 
          gl.model = model
+         window.requestAnimationFrame(time => animate(time))
       })
 
    // ************ Create MATRIX   ************
 
-   let  PROJMATRIX = glMatrix.mat4.create();
+   let PROJMATRIX = glMatrix.mat4.create();
    glMatrix.mat4.identity(PROJMATRIX);
-   let  fovy =  40 * Math.PI / 180;
-   glMatrix.mat4.perspective(PROJMATRIX,fovy,gl.canvas.width/gl.canvas.height,1,100);
+   let fovy = 40 * Math.PI / 180;
+   glMatrix.mat4.perspective(PROJMATRIX, fovy, gl.canvas.width / gl.canvas.height, 1, 100);
 
-   let  MODELMATRIX   = glMatrix.mat4.create();
-   let  VIEWMATRIX    = glMatrix.mat4.create();
-   let  NORMALMATRIX  = glMatrix.mat4.create();
-   let  NORMALMATRIX_HELPER  = glMatrix.mat4.create();
-   let  VIEWMATRIX_CAMERA    = glMatrix.mat4.create();
+   let MODELMATRIX = glMatrix.mat4.create();
+   let VIEWMATRIX = glMatrix.mat4.create();
+   let NORMALMATRIX = glMatrix.mat4.create();
+   let NORMALMATRIX_HELPER = glMatrix.mat4.create();
+   let VIEWMATRIX_CAMERA = glMatrix.mat4.create();
 
    //  **** NORMAL ***
    let shaderProgram_Normal;
@@ -125,21 +179,26 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
 
    let Z = 0;
    let AMORTIZATION = 0.9;
-   let animate;
 
-   animate = function (time) {
+   // let animate;
 
-      window.requestAnimationFrame(animate)
+   function animate(time) {
 
-      if (!gl.model) return false;
+
+      // if (!gl.model) return false;
       //---------- translate  --------------------------------------------//
-      MouseContr.dX *= AMORTIZATION; MouseContr.dY *= AMORTIZATION;
-      MouseContr.theta += MouseContr.dX; MouseContr.phi += MouseContr.dY;
+      MouseContr.dX *= AMORTIZATION;
+      MouseContr.dY *= AMORTIZATION;
+      MouseContr.theta += MouseContr.dX;
+      MouseContr.phi += MouseContr.dY;
 
-      Z = Z + MouseContr.dZ; if(Z<1.0){Z=1.0}
+      Z = Z + MouseContr.dZ;
+      if (Z < 1.0) {
+         Z = 1.0
+      }
       //----------------------------------------------------------------------------------
       glMatrix.mat4.identity(VIEWMATRIX);
-      glMatrix.mat4.lookAt(VIEWMATRIX,[gui.view_directionX, gui.view_directionY, gui.view_directionZ],[0.0, 0.0, 0.0],[0.0, 1.0, 0.0]);
+      glMatrix.mat4.lookAt(VIEWMATRIX, [gui.view_directionX, gui.view_directionY, gui.view_directionZ], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]);
       // glMatrix.mat4.rotateX(VIEWMATRIX,VIEWMATRIX , MouseContr.phi);
       //  glMatrix.mat4.rotateY(VIEWMATRIX,VIEWMATRIX , MouseContr.theta);
       glMatrix.mat4.identity(VIEWMATRIX_CAMERA);
@@ -149,31 +208,34 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
 
       //----------------- NORMALMATRIX_HELPER --------------------------------------------
       glMatrix.mat4.identity(MODELMATRIX);
-      glMatrix.mat4.scale(MODELMATRIX,MODELMATRIX ,[1.0,Z,1.0]);
+      glMatrix.mat4.scale(MODELMATRIX, MODELMATRIX, [1.0, Z, 1.0]);
       // glMatrix.mat4.multiply(MODELMATRIX,MODELMATRIX,VIEWMATRIX);
-      glMatrix.mat4.invert(NORMALMATRIX_HELPER,MODELMATRIX);
-      glMatrix.mat4.transpose(NORMALMATRIX_HELPER,NORMALMATRIX_HELPER);
+      glMatrix.mat4.invert(NORMALMATRIX_HELPER, MODELMATRIX);
+      glMatrix.mat4.transpose(NORMALMATRIX_HELPER, NORMALMATRIX_HELPER);
 
 
       glMatrix.mat4.identity(MODELMATRIX);
 
       let model_translate = glMatrix.vec3.create();
-      glMatrix.vec3.set(model_translate,gui.model_X,gui.model_Y,gui.model_Z);
-      glMatrix.mat4.translate(MODELMATRIX,MODELMATRIX,model_translate);
-      glMatrix.mat4.rotateX(MODELMATRIX,MODELMATRIX , MouseContr.phi);
-      glMatrix.mat4.rotateY(MODELMATRIX,MODELMATRIX , MouseContr.theta);
-      glMatrix.mat4.scale(MODELMATRIX,MODELMATRIX ,[1.0,Z,1.0]);
+      glMatrix.vec3.set(model_translate, gui.model_X, gui.model_Y, gui.model_Z);
+      glMatrix.mat4.translate(MODELMATRIX, MODELMATRIX, model_translate);
+      glMatrix.mat4.rotateX(MODELMATRIX, MODELMATRIX, MouseContr.phi);
+      glMatrix.mat4.rotateY(MODELMATRIX, MODELMATRIX, MouseContr.theta);
+      glMatrix.mat4.scale(MODELMATRIX, MODELMATRIX, [1.0, Z, 1.0]);
 
-      glMatrix.mat4.invert(NORMALMATRIX,MODELMATRIX);
-      glMatrix.mat4.transpose(NORMALMATRIX,NORMALMATRIX);
+      glMatrix.mat4.invert(NORMALMATRIX, MODELMATRIX);
+      glMatrix.mat4.transpose(NORMALMATRIX, NORMALMATRIX);
 
-      gl.useProgram(shaderProgram)
       //----------------------------------------------------------------------------------
       gl.clearColor(0.5, 0.5, 0.5, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       //----------------------------------------------------------------------------------
 
       gl.useProgram(shaderProgram);
+      gl.enableVertexAttribArray(a_Position)
+      gl.enableVertexAttribArray(a_uv)
+      gl.enableVertexAttribArray(a_normal)
+
       gl.uniformMatrix4fv(u_Pmatrix, false, PROJMATRIX);
       gl.uniformMatrix4fv(u_Mmatrix, false, MODELMATRIX);
       gl.uniformMatrix4fv(u_Vmatrix, false, VIEWMATRIX);
@@ -181,14 +243,14 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
 
       //-------------------------- Lighting ----------------------------------------------
       let source_direction = glMatrix.vec3.create();
-      glMatrix.vec3.set(source_direction,gui.source_directionX,gui.source_directionY,gui.source_directionZ);
+      glMatrix.vec3.set(source_direction, gui.source_directionX, gui.source_directionY, gui.source_directionZ);
 
       gl.uniform3fv(u_source_direction, source_direction);
       gl.uniform1f(u_shininess, gui.shininess);
 
       let view_direction = glMatrix.vec3.create();
-      glMatrix.vec3.set(view_direction,gui.view_directionX, gui.view_directionY, gui.view_directionZ);
-      glMatrix.vec3.transformMat4(view_direction,view_direction,VIEWMATRIX_CAMERA);
+      glMatrix.vec3.set(view_direction, gui.view_directionX, gui.view_directionY, gui.view_directionZ);
+      glMatrix.vec3.transformMat4(view_direction, view_direction, VIEWMATRIX_CAMERA);
       gl.uniform3fv(u_view_direction, view_direction);
 
 
@@ -211,19 +273,23 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
 
 
       //------------------------- NORMAL -------------------------------------------------
-      if(gui.normal){
-         VertexNormalHelper(gl,shaderProgram_Normal,PROJMATRIX,VIEWMATRIX,MODELMATRIX,NORMALMATRIX_HELPER);
+      if (gui.normal) {
+         VertexNormalHelper(gl, shaderProgram_Normal, PROJMATRIX, VIEWMATRIX, MODELMATRIX, NORMALMATRIX_HELPER);
       }
       //------------------------- AXIS -------------------------------------------------
-      if(gui.axis){
-         loadAxisHelper(gl,shaderProgram_Axis,PROJMATRIX,VIEWMATRIX,MODELMATRIX);
+      if (gui.axis) {
+         loadAxisHelper(gl, shaderProgram_Axis, PROJMATRIX, VIEWMATRIX, MODELMATRIX);
       }
 
       gl.flush();
       render()
+      window.requestAnimationFrame(animate)
    }
 
-   window.requestAnimationFrame(time => animate(time))
+   // window.requestAnimationFrame(time => animate(time))
+
+   document.getElementById('btn1').onclick = switchMainProgram
+   document.getElementById('btn2').onclick = switchMainProgram
 }
 
 function resize(e) {
@@ -241,6 +307,7 @@ function render() {
 }
 
 window.addEventListener('resize', resize);
+
 
 document.addEventListener('DOMContentLoaded', () => {
    InitWebGL();

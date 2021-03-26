@@ -93,7 +93,7 @@ function VertexNormalHelper(gl,shaderProgram_Normal,PROJMATRIX,VIEWMATRIX,MODELM
    gl.useProgram(shaderProgram_Normal);
    gl.enableVertexAttribArray(shaderProgram_Normal.a_Position_normal);
 
-   MODELMATRIX_Axis =
+   // MODELMATRIX_Axis =
 
       gl.uniformMatrix4fv(shaderProgram_Normal.u_Pmatrix_normal, false, PROJMATRIX);
    gl.uniformMatrix4fv(shaderProgram_Normal.u_Mmatrix_normal, false, MODELMATRIX);
@@ -102,7 +102,7 @@ function VertexNormalHelper(gl,shaderProgram_Normal,PROJMATRIX,VIEWMATRIX,MODELM
    gl.bindBuffer(gl.ARRAY_BUFFER, TRIANGLE_NORMAL);
    gl.vertexAttribPointer(shaderProgram_Normal.a_Position_normal, 3, gl.FLOAT, false, 4 * (3), 0);
    // gl.drawArrays(gl.POINTS, ModelNormal.length, gl.FLOAT, 0);
-   gl.bindBuffer(gl.ARRAY_BUFFER, TRIANGLE_NORMAL);
+   // gl.bindBuffer(gl.ARRAY_BUFFER, TRIANGLE_NORMAL);
    gl.drawArrays(gl.LINES, 0, newNormal.length/3);
-
+   gl.useProgram(null);
 }

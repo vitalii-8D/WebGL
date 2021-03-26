@@ -29,7 +29,7 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
       return false;
    }
 
-   bufferGL.width = 1200
+   bufferGL.width = 1000
    bufferGL.height = 1000
    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
    resize();
@@ -40,7 +40,7 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
    shaderProgram = createProgram(gl, vertexShader, fragmentShader);
 
    let gui = myGUI();
-   let MouseContr = new MouseController(gl);
+   let MouseContr = new MouseController(context);
 
    let u_Pmatrix = gl.getUniformLocation(shaderProgram, 'u_Pmatrix');
    let u_Vmatrix = gl.getUniformLocation(shaderProgram, 'u_Vmatrix');
@@ -167,6 +167,7 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
       glMatrix.mat4.invert(NORMALMATRIX,MODELMATRIX);
       glMatrix.mat4.transpose(NORMALMATRIX,NORMALMATRIX);
 
+      gl.useProgram(shaderProgram)
       //----------------------------------------------------------------------------------
       gl.clearColor(0.5, 0.5, 0.5, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -219,6 +220,7 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
       }
 
       gl.flush();
+      render()
    }
 
    window.requestAnimationFrame(time => animate(time))

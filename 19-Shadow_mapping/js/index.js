@@ -23,7 +23,7 @@ const InitWebGL = (e) => {
       })
 }
 
-let context, gl, shaderProgram;
+let context, gl;
 
 const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
 

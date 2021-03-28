@@ -95,7 +95,7 @@ function loadBuffer(gl,meshes) {
       ModelIndiceslength:0,
 
    };
-   
+
    let ModelVertices   =  meshes.vertices;
    let ModelIndices    =  [].concat.apply([], meshes.faces);
    let ModelTexCoords  =  meshes.texturecoords[0];

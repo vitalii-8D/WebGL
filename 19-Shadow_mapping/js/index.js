@@ -133,12 +133,12 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
    let PROJMATRIX = glMatrix.mat4.create();
    glMatrix.mat4.identity(PROJMATRIX);
    let fovy = 40 * Math.PI / 180;
-   glMatrix.mat4.perspective(PROJMATRIX, fovy, gl.canvas.width / gl.canvas.height, 1, 100);
+   glMatrix.mat4.perspective(PROJMATRIX, fovy, gl.canvas.width / gl.canvas.height, 1, 50);
 
    // ---------------------   SHADOW MAP MATRIX ------------------  //
    let PROJMATRIX_SHADOW = glMatrix.mat4.create();
    glMatrix.mat4.identity(PROJMATRIX_SHADOW);
-   glMatrix.mat4.ortho(PROJMATRIX_SHADOW, -5.0, 5.0, -5.0, 5.0, 0.1, 25.0)
+   glMatrix.mat4.ortho(PROJMATRIX_SHADOW, -5.0, 5.0, -5.0, 5.0, 0.1, 35.0)
 
    let VIEWMATRIX_SHADOW_MAP = glMatrix.mat4.create();
 
@@ -146,7 +146,6 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
    let MODELMATRIX = glMatrix.mat4.create();
    let MODELMATRIX_FLOOR = glMatrix.mat4.create();
    let VIEWMATRIX = glMatrix.mat4.create();
-   // let VIEWMATRIX_CAMERA = glMatrix.mat4.create();
    let NORMALMATRIX = glMatrix.mat4.create();
    let NORMALMATRIX_HELPER = glMatrix.mat4.create();
 
@@ -163,9 +162,9 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
 
    let Z = 0;
    let AMORTIZATION = 0.9;
-   let x;
+   let x = 0.0;
 
-   function animate(time) {
+   let animate = function(time) {
       //---------- translate  --------------------------------------------//
       MouseContr.dX *= AMORTIZATION;
       MouseContr.dY *= AMORTIZATION;
@@ -206,7 +205,7 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
       glMatrix.mat4.transpose(NORMALMATRIX, NORMALMATRIX);
 
       // ----------------------  MODELMATRIX_FLOOR -----------------------
-      // glMatrix.mat4.identity(MODELMATRIX_FLOOR)
+      glMatrix.mat4.identity(MODELMATRIX_FLOOR)
 
       // ----------------------  RENDER THE SHADOW  -----------------------
       gl.bindFramebuffer(gl.FRAMEBUFFER, fb)
@@ -237,8 +236,8 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ModelPlane.TRIANGLE_FACES)
       gl.drawElements(gl.TRIANGLES, ModelPlane.ModelIndiceslength, gl.UNSIGNED_SHORT, 0)
 
-      gl.flush();
       gl.disableVertexAttribArray(a_Position_shadow)
+      gl.flush();
       gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
       //---------------------------  MAIN RENDER  -------------------
@@ -276,9 +275,7 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
 
       let view_direction = glMatrix.vec3.create();
       glMatrix.vec3.set(view_direction, gui.view_directionX, gui.view_directionY, gui.view_directionZ);
-      // glMatrix.vec3.transformMat4(view_direction, view_direction, VIEWMATRIX_CAMERA);
       gl.uniform3fv(u_view_direction, view_direction);
-
 
       if (tex.webGLtexture) {
          gl.activeTexture(gl.TEXTURE1);
@@ -324,10 +321,10 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
       }
 
       // ------------   NORMALMATRIX REAL  --------------
-      glMatrix.mat4.invert(NORMALMATRIX, MODELMATRIX);
+      glMatrix.mat4.invert(NORMALMATRIX, MODELMATRIX_FLOOR);
       glMatrix.mat4.transpose(NORMALMATRIX, NORMALMATRIX);
 
-      gl.uniformMatrix4fv(u_Mmatrix, false, NORMALMATRIX)
+      gl.uniformMatrix4fv(u_Nmatrix, false, NORMALMATRIX)
 
       gl.bindBuffer(gl.ARRAY_BUFFER, ModelPlane.TRIANGLE_VERTEX);
       gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 4 * (3), 0);

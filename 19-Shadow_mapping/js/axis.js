@@ -39,6 +39,9 @@ function loadAxisShaders(gl) {
    shaderProgram_Axis.aColor_axis = gl.getAttribLocation(shaderProgram_Axis,'aColor');
    gl.enableVertexAttribArray( shaderProgram_Axis.aColor_axis);
 
+   gl.disableVertexAttribArray(shaderProgram_Axis.a_Position_axis)
+   gl.disableVertexAttribArray(shaderProgram_Axis.aColor_axis)
+
    return shaderProgram_Axis;
 
 }
@@ -77,6 +80,9 @@ function loadAxisHelper(gl,shaderProgram_Axis,PROJMATRIX,VIEWMATRIX,MODELMATRIX,
    gl.vertexAttribPointer(shaderProgram_Axis.aColor_axis,3,gl.FLOAT,false,4*6,4*3);
 
    gl.drawArrays(gl.LINES,0,6);
+
+   gl.disableVertexAttribArray(shaderProgram_Axis.a_Position_axis)
+   gl.disableVertexAttribArray(shaderProgram_Axis.aColor_axis)
    gl.useProgram(null);
 
 }

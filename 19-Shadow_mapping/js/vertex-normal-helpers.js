@@ -104,5 +104,7 @@ function VertexNormalHelper(gl,shaderProgram_Normal,PROJMATRIX,VIEWMATRIX,MODELM
    // gl.drawArrays(gl.POINTS, ModelNormal.length, gl.FLOAT, 0);
    // gl.bindBuffer(gl.ARRAY_BUFFER, TRIANGLE_NORMAL);
    gl.drawArrays(gl.LINES, 0, newNormal.length/3);
+
+   gl.disableVertexAttribArray(shaderProgram_Normal.a_Position_normal)
    gl.useProgram(null);
 }

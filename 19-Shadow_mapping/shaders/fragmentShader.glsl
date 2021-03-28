@@ -20,7 +20,7 @@ const vec3 source_specular_color = vec3(1.0,1.0,1.0);
 
 void main() {
     vec2 uv_ShadowMap = v_LightPos.xy;
-    vec4 ShadowMapColor = textyre2D(samplerShadowMap, uv_ShadowMap);
+    vec4 ShadowMapColor = texture2D(samplerShadowMap, uv_ShadowMap);
     float z_ShadowMap = ShadowMapColor.r;
 
     float thisShadow = 1.0;

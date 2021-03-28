@@ -48,7 +48,7 @@ function myGUI(gl) {
    // gui.add(settingGUI,'rotateX').min(-1.0).max(1.0).step(0.1);
    var  source_direction = gui.addFolder('source direction');
    source_direction.add(settingGUI,'source_directionX').min(-15.0).max(15.0).step(0.1);
-   source_direction.add(settingGUI,'source_directionY').min(0.0).max(15.0).step(0.1);
+   source_direction.add(settingGUI,'source_directionY').min(-15.0).max(15.0).step(0.1);
    source_direction.add(settingGUI,'source_directionZ').min(-15.0).max(15.0).step(0.1);
    source_direction.open()
 

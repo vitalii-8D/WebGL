@@ -21,6 +21,21 @@ const InitWebGL = (e) => {
          alert('Error with loading resources. See console for details!')
          console.log(err);
       })
+
+   // ----------  OR use Promise.all  ---------
+   // let vs_promise = loadTextResource(`shaders/vertexShader.glsl`)
+   // let fs_promise = loadTextResource(`shaders/fragmentShader.glsl`)
+   // Promise.all([vs_promise, fs_promise]).then(data => {
+   //    VSText1 = data[0]
+   //    FSText1 = data[1]
+   // })
+
+   // ---------  OR use fetch   ----------
+   // fetch('shaders/vertexShader.glsl')
+   //    .then(data => data.text())
+   //    .then(data => {
+   //       VSText1 = data
+   //    })
 }
 
 let context, gl;

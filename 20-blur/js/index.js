@@ -59,7 +59,7 @@ function StartWebGL() {
    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, TRIANGLE_FACES)
    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(triangle_faces), gl.STATIC_DRAW)
 
-   let tex = loadTexture(gl, 'textures/box.jpg')
+   let tex = loadTexture(gl, 'textures/uzor.jpg')
    let radios = document.getElementsByName("shader");
 
    let vertexShaderText = vs;
@@ -114,7 +114,8 @@ function StartWebGL() {
 
       if (tex.webGLtexture) {
          size = glMatrix.vec2.create();
-         gl.uniform2fv(u_texSize, glMatrix.vec2.set(size, 1024, 1024))
+         glMatrix.vec2.set(size, 512, 512)
+         gl.uniform2fv(u_texSize, size)
 
          gl.activeTexture(gl.TEXTURE0)
          gl.bindTexture(gl.TEXTURE_2D, tex.webGLtexture)

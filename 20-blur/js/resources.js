@@ -47,11 +47,13 @@ let createProgram = (gl, vertexS, fragmentS) => {
 }
 
 let loadTexture = (gl, url) => {
+   console.log('url');
    let image = new Image()
    image.src = url;
    image.webGLtexture = false;
 
    image.onload = function () {
+      console.log('loaded');
       let texture = gl.createTexture()
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
 

@@ -1,4 +1,4 @@
-let vs, fs, fs_1, fs_2, fs_3;
+let vs, fs, fs_1, fs_2, fs_3, fs_4;
 
 let InitWebGL = () => {
    let Pvs = loadResource('shaders/vs.glsl')
@@ -6,14 +6,16 @@ let InitWebGL = () => {
    let Pfs_1 = loadResource('shaders/fs_1.glsl')
    let Pfs_2 = loadResource('shaders/fs_2.glsl')
    let Pfs_3 = loadResource('shaders/fs_3.glsl')
+   let Pfs_4 = loadResource('shaders/fs_4.glsl')
 
-   Promise.all([Pvs, Pfs, Pfs_1, Pfs_2, Pfs_3])
+   Promise.all([Pvs, Pfs, Pfs_1, Pfs_2, Pfs_3, Pfs_4])
       .then(data => {
          vs = data[0]
          fs = data[1]
          fs_1 = data[2]
          fs_2 = data[3]
          fs_3 = data[4]
+         fs_4 = data[5]
 
          StartWebGL()
       })
@@ -28,116 +30,116 @@ function StartWebGL() {
 
    gl.viewport(0, 0, canvas.width, canvas.height)
 
-   let vertexShader = createShader(gl, gl.VERTEX_SHADER, vs)
-   let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fs)
+   let tex = loadTexture(gl, 'textures/box.jpg')
 
-   let program = createProgram(gl, vertexShader, fragmentShader)
-   gl.useProgram(program)
+   let animate = function () {
 
-   let a_Position = gl.getAttribLocation(program, 'a_Position')
-   let a_uv = gl.getAttribLocation(program, 'a_uv')
-   let sampler = gl.getUniformLocation(program, 'sampler')
-   let u_texSize = gl.getUniformLocation(program, 'u_texSize')
+      let VSHADER_SOURCE = vs
+      let FSHADER_SOURCE = fs
 
-   gl.uniform1i(sampler, 0)
+      const radio = document.getElementsByName("shader");
 
-   let triangle_vertex = [
-      -1, 1, -1, 1,
-      -1, -1, -1, -1,
-      1, -1, 1, -1,
-      1, 1, 1, 1
-   ]
-   let TRIANGLE_VERTEX = gl.createBuffer()
-   gl.bindBuffer(gl.ARRAY_BUFFER, TRIANGLE_VERTEX)
-   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangle_vertex), gl.STATIC_DRAW)
-
-   let triangle_faces = [
-      0, 1, 2,
-      0, 2, 3
-   ]
-   let TRIANGLE_FACES = gl.createBuffer()
-   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, TRIANGLE_FACES)
-   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(triangle_faces), gl.STATIC_DRAW)
-
-   let tex = loadTexture(gl, 'textures/uzor.jpg')
-   let radios = document.getElementsByName("shader");
-
-   let vertexShaderText = vs;
-   let fragmentShaderText = fs;
-   let currentMode = 'original';
-   let size;
-
-   let animate = () => {
-
-      for (let i = 0; i < radios.length; i++) {
-         if (radios[i].checked) {
-            let newMode = radios[i].value;
-            console.log(newMode);
-            if (newMode === currentMode) {
-               break;
-            } else {
-               switch (newMode) {
-                  case 'original': {
-                     fragmentShaderText = fs;
-                  } break;
-                  case 'blur-1': {
-                     fragmentShaderText = fs_1;
-                  } break;
-                  case 'blur-2': {
-                     fragmentShaderText = fs_2;
-                  } break;
-                  case 'blur-3': {
-                     fragmentShaderText = fs_3;
-                  } break;
-                  default: console.error('shader mode is unknown')
-               }
-               currentMode = newMode
-
-               vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderText)
-               fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderText)
-
-               program = createProgram(gl, vertexShader, fragmentShader)
-               gl.useProgram(program)
-
-               a_Position = gl.getAttribLocation(program, 'a_Position')
-               a_uv = gl.getAttribLocation(program, 'a_uv')
-               sampler = gl.getUniformLocation(program, 'sampler')
-               texSize = gl.getUniformLocation(program, 'texSize')
-
-               gl.uniform1i(sampler, 0)
+      for (let i = 0; i < radio.length; i++) {
+         if (radio[i].checked) {
+            if (radio[i].value == 'original') {
+               VSHADER_SOURCE = vs
+               FSHADER_SOURCE = fs
+            } else if (radio[i].value == 'blur-1') {
+               VSHADER_SOURCE = vs
+               FSHADER_SOURCE = fs_1;
+            } else if (radio[i].value == 'blur-2') {
+               VSHADER_SOURCE = vs
+               FSHADER_SOURCE = fs_2;
+            } else if (radio[i].value == 'blur-3') {
+               VSHADER_SOURCE = vs
+               FSHADER_SOURCE = fs_3;
+            } else if (radio[i].value == 'blur-4') {
+               VSHADER_SOURCE = vs
+               FSHADER_SOURCE = fs_4;
             }
          }
       }
 
-      gl.clearColor(0.5, 0.5, 0.5, 1.0)
-      gl.clear(gl.COLOR_BUFFER_BIT)
+      const VS = createShader(gl, gl.VERTEX_SHADER, VSHADER_SOURCE)
 
-      if (tex.webGLtexture) {
-         size = glMatrix.vec2.create();
-         glMatrix.vec2.set(size, 512, 512)
-         gl.uniform2fv(u_texSize, size)
+      const FS = createShader(gl, gl.FRAGMENT_SHADER, FSHADER_SOURCE)
 
-         gl.activeTexture(gl.TEXTURE0)
-         gl.bindTexture(gl.TEXTURE_2D, tex.webGLtexture)
+      const shaderProgram = gl.createProgram();
+      gl.attachShader(shaderProgram, VS);
+      gl.attachShader(shaderProgram, FS);
+      gl.linkProgram(shaderProgram);
+
+      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+         let info = gl.getProgramInfoLog(shaderProgram);
+         throw new Error('Could not compile WebGL program. \n\n' + info);
       }
 
-      gl.enableVertexAttribArray(a_Position)
-      gl.enableVertexAttribArray(a_uv)
+      const vertex_arr =
+         [
+            -0.9, -0.9,
+            -0.9, 0.9,
+            0.9, 0.9,
+            0.9, -0.9,
+         ];
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, TRIANGLE_VERTEX)
-      gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 4*4, 0)
-      gl.vertexAttribPointer(a_uv, 2, gl.FLOAT, false, 4*4, 2*4)
 
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, TRIANGLE_FACES)
-      gl.drawElements(gl.TRIANGLES, triangle_faces.length, gl.UNSIGNED_SHORT, 0)
+      const BUFFER_VERTEX = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, BUFFER_VERTEX);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertex_arr), gl.STATIC_DRAW);
 
-      gl.flush()
+      const uv_arr =
+         [
+            0.0, 0.0,
+            1.0, 0.0,
+            1.0, 1.0,
+            0.0, 1.0
+         ];
 
-      window.requestAnimationFrame(time => {animate(time)})
+      const BUFFER_UV = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, BUFFER_UV);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uv_arr), gl.STATIC_DRAW);
+
+      const face_arr = [0, 1, 2, 0, 2, 3];
+      const BUFFER_INDEX = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, BUFFER_INDEX);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(face_arr), gl.STATIC_DRAW);
+
+      //-- RENDER-- //
+      gl.useProgram(shaderProgram);
+
+      let a_Position = gl.getAttribLocation(shaderProgram, 'a_Position');
+      let a_UV = gl.getAttribLocation(shaderProgram, 'a_UV');
+      let u_tex = gl.getUniformLocation(shaderProgram, 'u_tex');
+      let u_textureSize = gl.getUniformLocation(shaderProgram, 'u_textureSize');
+      //u_textureSize
+      //  gl.uniform2f(u_textureSize,tex.webGLtexture.width,tex.webGLtexture.height);
+      gl.uniform1i(u_tex, 0);
+      if (tex.webGLtexture) {
+
+         let texsize = glMatrix.vec2.create();
+         gl.uniform2fv(u_textureSize, glMatrix.vec2.set(texsize, tex.width, tex.height));
+         gl.activeTexture(gl.TEXTURE0);
+         gl.bindTexture(gl.TEXTURE_2D, tex.webGLtexture);
+      }
+      gl.enableVertexAttribArray(a_Position);
+      gl.enableVertexAttribArray(a_UV);
+
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0.5, 0.5, 0.5, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, BUFFER_VERTEX);
+      gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 4 * (2), 0);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, BUFFER_UV);
+      gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 4 * (2), 0);
+
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, BUFFER_INDEX);
+      gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+      gl.flush();
+      window.requestAnimationFrame(animate);
    }
-
-   window.requestAnimationFrame(time => {animate(time)})
-
+   window.requestAnimationFrame(animate);
 }
 
 window.addEventListener('DOMContentLoaded', () => {

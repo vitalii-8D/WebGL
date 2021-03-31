@@ -23,6 +23,7 @@ function myGUI(gl) {
       axis: true,
       CameraShadow: false,
       PCF: true,
+      Clicked: false,
 
       SHADOW_MAP_SIZE: 128,
 
@@ -74,6 +75,7 @@ function myGUI(gl) {
    gui.add(settingGUI,'axis');
    gui.add(settingGUI,'CameraShadow');
    gui.add(settingGUI,'PCF');
+   gui.add(settingGUI, 'Clicked');
 
    //gui.add(text,'SHADOW_MAP_SIZE');
 

@@ -93,7 +93,7 @@ function loadBuffer(gl,meshes) {
       TRIANGLE_NORMAL:0,
       TRIANGLE_FACES:0,
       ModelIndiceslength:0,
-
+      this_objPick: false
    };
 
    let ModelVertices   =  meshes.vertices;

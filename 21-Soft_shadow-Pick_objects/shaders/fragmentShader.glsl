@@ -8,6 +8,10 @@ uniform vec3 u_view_direction;
 uniform float u_CameraShadow;
 uniform float u_SoftShadowPFC;
 
+uniform vec4 u_colorPick;
+uniform vec3 u_Pick_ok;
+uniform float u_Clicked;
+
 varying vec2 v_uv;
 //varying vec3 v_color;
 varying vec3 v_normal;
@@ -68,9 +72,17 @@ void main() {
     S = pow(S, u_shininess);
 
     vec3 I_specular = source_specular_color * S;
+    float intensity = 1.0 / (50.0 / u_shininess) + 0.3;
+    I_specular = I_specular * intensity;
 
     vec3 color =  I_specular + source_diffuse_color * max(0.0, dot(v_normal, L));
     color = color * thisSoftShadow + source_ambient_color;
-    gl_FragColor =  vec4(color * colorTex, 1.0);
+    color = color + u_Pick_ok;
+
+    if(u_Clicked == 1.0) {
+        gl_FragColor = u_colorPick;
+    } else {
+        gl_FragColor =  vec4(color * colorTex, 1.0);
+    }
 
 }

@@ -95,8 +95,13 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
    let u_shininess = gl.getUniformLocation(shaderProgram, 'u_shininess')
    let u_source_direction = gl.getUniformLocation(shaderProgram, 'u_source_direction')
    let u_view_direction = gl.getUniformLocation(shaderProgram, 'u_view_direction')
+
    let u_CameraShadow = gl.getUniformLocation(shaderProgram, 'u_CameraShadow')
    let u_SoftShadowPFC = gl.getUniformLocation(shaderProgram, 'u_SoftShadowPFC')
+
+   let u_colorPick = gl.getUniformLocation(shaderProgram, 'u_colorPick')
+   let u_Pick_ok = gl.getUniformLocation(shaderProgram, 'u_Pick_ok')
+   let u_Clicked = gl.getUniformLocation(shaderProgram, 'u_Clicked')
 
    gl.useProgram(shaderProgram)
    gl.uniform1i(u_sampler, 0)
@@ -287,7 +292,7 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
       let bool_u_SoftShadowPFC = (gui.PCF == true) ? 1.0 : 0.0;
       gl.uniform1f(u_SoftShadowPFC, bool_u_SoftShadowPFC);
 
-      //-------------------------- Lighting ----------------------------------------------
+      //-------------------------- Lighting - MAIN RENDER ----------------------------------------------
       let source_direction = glMatrix.vec3.create();
       glMatrix.vec3.set(source_direction, gui.source_directionX, gui.source_directionY, gui.source_directionZ);
 
@@ -316,6 +321,54 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
       gl.vertexAttribPointer(a_uv, 2, gl.FLOAT, false, 4 * (2), 0);
 
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ModelMain.TRIANGLE_FACES);
+
+      if (MouseContr.pick) {
+
+         gl.uniform1f(u_Clicked, 1.0);
+         gl.uniform4fv(u_colorPick, [1.0, 0.0, 0.1, 1.0]);
+
+         gl.drawElements(gl.TRIANGLES, ModelMain.ModelIndiceslength, gl.UNSIGNED_SHORT, 0);
+         gl.flush();
+
+         let pixels = new Uint8Array(4);
+         let pixelsMainModel = new Uint8Array([255, 0, 25, 255]);
+         let pixelsMainPlane = new Uint8Array([0, 0, 255, 255]);
+
+         gl.readPixels(MouseContr.realX, MouseContr.realY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+         gl.uniform1f(u_Clicked, 0.0);
+
+         //MouseContr.Pick = false;
+         console.log(pixels.toString() == pixelsMainModel.toString());
+         console.log(pixels);
+         console.log(pixelsMainModel);
+
+         if (pixels.toString() == pixelsMainModel.toString()) {
+
+            ModelMain.this_objPick = true;
+            ModelPlane.this_objPick = false;
+
+         } else if (pixels.toString() == pixelsMainPlane.toString()) {
+
+            ModelPlane.this_objPick = true;
+            ModelMain.this_objPick = false;
+
+         } else {
+
+            ModelPlane.this_objPick = false;
+            ModelMain.this_objPick = false;
+         }
+
+
+      }
+
+      if (ModelMain.this_objPick) {
+         gl.uniform3fv(u_Pick_ok, [0.9, 0.5, 0.0]);
+         ModelPlane.this_objPick = false;
+
+      } else {
+         gl.uniform3fv(u_Pick_ok, [0.0, 0.0, 0.0]);
+      }
+
       gl.drawElements(gl.TRIANGLES, ModelMain.ModelIndiceslength, gl.UNSIGNED_SHORT, 0);
 
       gl.flush();
@@ -357,6 +410,68 @@ const StartWebGL = (VSText, FSText, VSText_shadow, FSText_shadow) => {
       gl.vertexAttribPointer(a_uv, 2, gl.FLOAT, false, 4 * (2), 0);
 
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ModelPlane.TRIANGLE_FACES);
+
+      if (MouseContr.pick && ModelMain.this_objPick == false) {
+         gl.uniform1f(u_Clicked, 1.0);
+         gl.uniform4fv(u_colorPick, [0.0, 0.0, 1.0, 1.0]);
+
+         gl.drawElements(gl.TRIANGLES, ModelPlane.ModelIndiceslength, gl.UNSIGNED_SHORT, 0);
+
+         gl.uniform4fv(u_colorPick, [1.0, 0.0, 0.1, 1.0]);
+
+         gl.drawElements(gl.TRIANGLES, ModelMain.ModelIndiceslength, gl.UNSIGNED_SHORT, 0);
+
+         gl.flush();
+         let pixels = new Uint8Array(4);
+         let pixelsMainModel = new Uint8Array([255, 0, 25, 255]);
+         let pixelsMainPlane = new Uint8Array([0, 0, 255, 255]);
+
+         gl.readPixels(MouseContr.realX, MouseContr.realY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+         gl.uniform1f(u_Clicked, 0.0);
+
+         MouseContr.Pick = false;
+
+         console.log(pixels.toString() == pixelsMainModel.toString());
+         console.log(pixels.toString() == pixelsMainPlane.toString());
+         console.log(pixels);
+         console.log(pixelsMainModel);
+         console.log(pixelsMainPlane);
+
+         if (pixels.toString() == pixelsMainModel.toString()) {
+
+            ModelMain.this_objPick = true;
+            ModelPlane.this_objPick = false;
+
+         } else if (pixels.toString() == pixelsMainPlane.toString()) {
+
+            ModelPlane.this_objPick = true;
+            ModelMain.this_objPick = false;
+
+         } else {
+
+            ModelPlane.this_objPick = false;
+            ModelMain.this_objPick = false;
+         }
+
+
+      }
+
+      if (ModelMain.this_objPick) {
+         gl.uniform3fv(u_Pick_ok, [0.9, 0.5, 0.0]);
+         ModelPlane.this_objPick = false;
+
+      } else {
+         gl.uniform3fv(u_Pick_ok, [0.0, 0.0, 0.0]);
+      }
+
+      if (ModelPlane.this_objPick) {
+         gl.uniform3fv(u_Pick_ok, [0.9, 0.5, 0.0]);
+         ModelMain.this_objPick = false;
+
+      } else {
+         gl.uniform3fv(u_Pick_ok, [0.0, 0.0, 0.0]);
+      }
+
       gl.drawElements(gl.TRIANGLES, ModelPlane.ModelIndiceslength, gl.UNSIGNED_SHORT, 0);
 
       // let pixels = new Uint8Array(4)
@@ -386,6 +501,7 @@ function resize(e) {
    const windowHeight = document.documentElement.clientHeight;
    const sideSize = windowWidth < windowHeight ? windowWidth : windowHeight;
    context.canvas.width = context.canvas.height = sideSize;
+   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 }
 
 function render() {

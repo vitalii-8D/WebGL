@@ -3,6 +3,7 @@ class MouseController{
    constructor(gl){
       let oThis = this;
       this.drag = false;
+      this.pick = false;
 
       this.dZ = 0.0;
       this.dX = 0.0;
@@ -37,6 +38,7 @@ class MouseController{
    mouseDown=function(e) {
 
       this.drag = true;
+      this.pick = true;
 
       // For actual coordinates of canvas
       // let rect = e.target.getBoundingClientRect()
@@ -44,11 +46,13 @@ class MouseController{
       // let y = e.pageY - rect.top;
       // console.log(x, y);
       // let realX = Math.floor(x / rect.width * 600)
-      // let realY = Math.floor(x / rect.height * 600);
+      // let realY = 600 - Math.floor(x / rect.height * 600);
       // console.log(realX, realY);
       // console.log(rect);
-      // this.realX = realX
-      // this.realY = realY
+
+      console.log(e.layerX, e.layerY);
+      this.realX = e.layerX
+      this.realY = 600 - e.layerY
 
       this.old_x = e.pageX; this.old_y = e.pageY;
       e.preventDefault();
@@ -58,11 +62,13 @@ class MouseController{
    mouseUp=function(e){
 
       this.drag=false;
+      this.pick = false;
 
    };
 
    mouseMove=function(e) {
       if (!this.drag) return false;
+      this.pick = false;
 
       this.dX=(e.pageX-this.old_x)*2*Math.PI/this.canvas.width;
       this.dY=(e.pageY-this.old_y)*2*Math.PI/this.canvas.height;

@@ -179,14 +179,16 @@ const StartWebGL = (vertexShaderText, fragmentShaderText) => {
       newNormal = [].concat.apply([], gl.newNormal)
 
       // ---------
+      mat4.inverse(MODELMATRIX, MODELMATRIX)
       mat4.scale(MODELMATRIX,  [1.0, controller.scaleY, 1.0])
       mat4.rotateY(MODELMATRIX, controller.rotY)
       mat4.rotateX(MODELMATRIX, controller.rotX)
       mat4.translate(MODELMATRIX, controller.transVec)
+      mat4.inverse(MODELMATRIX, MODELMATRIX)
 
-      gl.uniformMatrix4fv(u_Pmatrix, false, PROJMATRIX)
-      gl.uniformMatrix4fv(u_Vmatrix, false, VIEWMATRIX)
       gl.uniformMatrix4fv(u_Mmatrix, false, MODELMATRIX)
+      gl.uniformMatrix4fv(u_Vmatrix, false, VIEWMATRIX)
+      gl.uniformMatrix4fv(u_Pmatrix, false, PROJMATRIX)
 
       gl.bindBuffer(gl.ARRAY_BUFFER,TRIANGLE_NORMAL);
       gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(newNormal),gl.DYNAMIC_DRAW);
